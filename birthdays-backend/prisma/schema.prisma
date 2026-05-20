@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Religion {
+  christian
+  muslim
+  none
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  fullName     String
+  avatarUrl    String?
+  isPremium    Boolean  @default(false)
+  shareToken   String?  @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  birthdays        Birthday[]
+  birthdayRequests BirthdayRequest[]
+}
+
+model Birthday {
+  id        String   @id @default(cuid())
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  fullName  String
+  day       Int
+  month     Int
+  year      Int?
+  hideYear  Boolean  @default(true)
+  religion  Religion?
+  socials   Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ownerId])
+}
+
+model BirthdayRequest {
+  id        String   @id @default(cuid())
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  fullName  String
+  email     String?
+  day       Int
+  month     Int
+  year      Int?
+  hideYear  Boolean  @default(true)
+  religion  Religion?
+  socials   Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([ownerId])
+}
