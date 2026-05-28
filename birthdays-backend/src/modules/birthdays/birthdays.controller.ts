@@ -122,7 +122,7 @@ export async function getBirthdayById(
 
     const birthday = await birthdaysService.getBirthdayById(
       req.user.id,
-      req.params.id
+      req.params.id as string
     );
 
     if (!birthday) {
@@ -159,7 +159,7 @@ export async function updateBirthday(
 
     const birthday = await birthdaysService.updateBirthday(
       req.user.id,
-      req.params.id,
+      req.params.id as string,
       input
     );
 
@@ -183,7 +183,7 @@ export async function deleteBirthday(
 
     await birthdaysService.deleteBirthday(
       req.user.id,
-      req.params.id
+      req.params.id as string
     );
 
     return res.status(204).send();
@@ -222,7 +222,7 @@ export async function acceptBirthdayRequest(
 
     const birthday = await birthdaysService.acceptBirthdayRequest(
       req.user.id,
-      req.params.id
+      req.params.id as string
     );
 
     return res.status(201).json(birthday);
@@ -241,7 +241,7 @@ export async function declineBirthdayRequest(
       return res.status(401).json({ message: "Authentication required." });
     }
 
-    await birthdaysService.declineBirthdayRequest(req.user.id, req.params.id);
+    await birthdaysService.declineBirthdayRequest(req.user.id, req.params.id as string);
 
     return res.status(204).send();
   } catch (error) {

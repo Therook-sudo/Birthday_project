@@ -178,11 +178,12 @@ export async function verifyCode(input: VerifyCodeInput) {
     user = await prisma.user.create({
       data: {
         email,
-        fullName: input.fullName ?? email.split("@")[0],
+        fullName: input.fullName ?? (email.split("@")[0] || "User"),
         passwordHash: "",
       },
     });
   }
+
 
   const accessToken = createAccessToken(user);
 

@@ -26,10 +26,10 @@ export function verifyJwt(req: Request, res: Response, next: NextFunction) {
     });
   }
 
-  const token = authHeader.split(" ")[1];
+  const token = authHeader.split(" ")[1] as string;
 
   try {
-    const payload = jwt.verify(token, env.JWT_ACCESS_SECRET) as {
+    const payload = jwt.verify(token, env.JWT_ACCESS_SECRET) as unknown as {
       sub: string;
       email: string;
       isPremium: boolean;
