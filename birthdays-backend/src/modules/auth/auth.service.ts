@@ -2,8 +2,13 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { prisma } from "../../db/prisma";
 import { env } from "../../config/env";
-import type { LoginInput, SignupInput } from "./auth.schema";
-
+import type {
+  LoginInput,
+  SignupInput,
+  RequestCodeInput,
+  VerifyCodeInput,
+} from "./auth.schema";
+import { sendVerificationCodeEmail } from "../../utils/mailer";
 function createAccessToken(user: {
   id: string;
   email: string;
@@ -108,4 +113,81 @@ export async function getMe(userId: string) {
   }
 
   return toSafeUser(user);
+}
+
+
+function generateFiveDigitCode() {
+  return Math.floor(10000 + Math.random() * 90000).toString();
+}
+
+export async function requestCode(input: RequestCodeInput) {
+  const email = input.email.toLowerCase();
+  const code = generateFiveDigitCode();
+
+  await prisma.verificationCode.create({
+    data: {
+      email,
+      code,
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+    },
+  });
+
+  // For now, we return the code so we can test locally.
+  // Later we will send it by email and remove it from the response.
+  await sendVerificationCodeEmail(email, code);
+
+return {
+  message: "Verification code sent.",
+  email,
+};
+}
+
+export async function verifyCode(input: VerifyCodeInput) {
+  const email = input.email.toLowerCase();
+
+  const verification = await prisma.verificationCode.findFirst({
+    where: {
+      email,
+      code: input.code,
+      used: false,
+      expiresAt: {
+        gt: new Date(),
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  if (!verification) {
+    const error = new Error("Invalid or expired verification code.");
+    (error as any).statusCode = 401;
+    throw error;
+  }
+
+  await prisma.verificationCode.update({
+    where: { id: verification.id },
+    data: { used: true },
+  });
+
+  let user = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  if (!user) {
+    user = await prisma.user.create({
+      data: {
+        email,
+        fullName: input.fullName ?? email.split("@")[0],
+        passwordHash: "",
+      },
+    });
+  }
+
+  const accessToken = createAccessToken(user);
+
+  return {
+    user: toSafeUser(user),
+    accessToken,
+  };
 }

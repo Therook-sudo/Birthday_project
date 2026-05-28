@@ -14,7 +14,7 @@ import { dashboardRouter } from "./modules/dashboard/dashboard.routes";
 import { shareRouter } from "./modules/share/share.routes";
 import { publicRouter } from "./modules/public/public.routes";
 import { verifyJwt } from "./middleware/auth";
-
+import { notificationsRouter } from "./modules/notifications/notifications.routes";
 export const app = express();
 
 app.use(helmet());
@@ -54,3 +54,4 @@ app.use("/api/birthdays", verifyJwt, birthdaysRouter);
 app.use("/api/dashboard", verifyJwt, dashboardRouter);
 app.use("/api/share", verifyJwt, shareRouter);
 app.use("/api/public", publicRouter);
+app.use("/api/notifications", notificationsRouter);

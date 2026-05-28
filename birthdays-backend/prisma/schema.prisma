@@ -65,3 +65,14 @@ model BirthdayRequest {
 
   @@index([ownerId])
 }
+
+model VerificationCode {
+  id        String   @id @default(cuid())
+  email     String
+  code      String
+  used      Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}

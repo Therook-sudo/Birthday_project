@@ -1,5 +1,20 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { authService, type LoginPayload, type SignupPayload } from "@/services/auth.service";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
+
+import {
+  authService,
+  type RequestCodePayload,
+  type VerifyCodePayload,
+  type RequestCodeResponse,
+} from "@/services/auth.service";
+
 import { getAccessToken, setAccessToken } from "@/lib/api";
 import type { User } from "@/lib/types";
 
@@ -7,8 +22,8 @@ interface AuthContextValue {
   user: User | null;
   loading: boolean;
   isAuthenticated: boolean;
-  login: (payload: LoginPayload) => Promise<void>;
-  signup: (payload: SignupPayload) => Promise<void>;
+  requestCode: (payload: RequestCodePayload) => Promise<RequestCodeResponse>;
+  verifyCode: (payload: VerifyCodePayload) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -18,15 +33,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Bootstrap session: if we have a token, try fetching the current user.
   useEffect(() => {
     let cancelled = false;
+
     (async () => {
       const token = getAccessToken();
+
       if (!token) {
         setLoading(false);
         return;
       }
+
       try {
         const me = await authService.me();
         if (!cancelled) setUser(me);
@@ -37,18 +54,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!cancelled) setLoading(false);
       }
     })();
+
     return () => {
       cancelled = true;
     };
   }, []);
 
-  const login = useCallback(async (payload: LoginPayload) => {
-    const res = await authService.login(payload);
-    setUser(res.user);
+  const requestCode = useCallback(async (payload: RequestCodePayload) => {
+    return authService.requestCode(payload);
   }, []);
 
-  const signup = useCallback(async (payload: SignupPayload) => {
-    const res = await authService.signup(payload);
+  const verifyCode = useCallback(async (payload: VerifyCodePayload) => {
+    const res = await authService.verifyCode(payload);
     setUser(res.user);
   }, []);
 
@@ -62,11 +79,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       loading,
       isAuthenticated: !!user,
-      login,
-      signup,
+      requestCode,
+      verifyCode,
       logout,
     }),
-    [user, loading, login, signup, logout],
+    [user, loading, requestCode, verifyCode, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -74,6 +91,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within an AuthProvider");
+
+  if (!ctx) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+
   return ctx;
 }

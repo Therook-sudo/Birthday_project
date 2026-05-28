@@ -2,51 +2,82 @@ import { api, hasApi, setAccessToken } from "@/lib/api";
 import type { AuthResponse, User } from "@/lib/types";
 import { mockResolve, mockUser } from "./mockData";
 
-export interface LoginPayload {
+export interface RequestCodePayload {
   email: string;
-  password: string;
+  fullName?: string;
 }
 
-export interface SignupPayload {
-  fullName: string;
+export interface VerifyCodePayload {
   email: string;
-  password: string;
+  code: string;
+  fullName?: string;
+}
+
+export interface RequestCodeResponse {
+  message: string;
+  email: string;
+  code?: string;
 }
 
 export const authService = {
-  async login(payload: LoginPayload): Promise<AuthResponse> {
+  async requestCode(
+    payload: RequestCodePayload
+  ): Promise<RequestCodeResponse> {
     if (!hasApi()) {
-      const res: AuthResponse = { user: { ...mockUser, email: payload.email }, accessToken: "mock-token" };
-      setAccessToken(res.accessToken);
-      return mockResolve(res);
+      return mockResolve({
+        message: "Verification code sent.",
+        email: payload.email,
+        code: "12345",
+      });
     }
-    const res = await api.post<AuthResponse>("/auth/login", payload, { auth: false });
-    setAccessToken(res.accessToken);
-    return res;
+
+    return api.post<RequestCodeResponse>(
+      "/auth/request-code",
+      payload,
+      { auth: false }
+    );
   },
 
-  async signup(payload: SignupPayload): Promise<AuthResponse> {
+  async verifyCode(
+    payload: VerifyCodePayload
+  ): Promise<AuthResponse> {
     if (!hasApi()) {
       const res: AuthResponse = {
-        user: { ...mockUser, email: payload.email, fullName: payload.fullName },
+        user: {
+          ...mockUser,
+          email: payload.email,
+          fullName: payload.fullName || mockUser.fullName,
+        },
         accessToken: "mock-token",
       };
+
       setAccessToken(res.accessToken);
+
       return mockResolve(res);
     }
-    const res = await api.post<AuthResponse>("/auth/signup", payload, { auth: false });
+
+    const res = await api.post<AuthResponse>(
+      "/auth/verify-code",
+      payload,
+      { auth: false }
+    );
+
     setAccessToken(res.accessToken);
+
     return res;
   },
 
   async me(): Promise<User> {
     if (!hasApi()) return mockResolve(mockUser);
+
     return api.get<User>("/auth/me");
   },
 
   async logout(): Promise<void> {
     setAccessToken(null);
+
     if (!hasApi()) return;
+
     try {
       await api.post<void>("/auth/logout");
     } catch {

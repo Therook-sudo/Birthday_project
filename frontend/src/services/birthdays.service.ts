@@ -12,6 +12,7 @@ import {
   mockUpcoming,
 } from "./mockData";
 
+
 export interface CreateBirthdayPayload {
   fullName: string;
   day: number;

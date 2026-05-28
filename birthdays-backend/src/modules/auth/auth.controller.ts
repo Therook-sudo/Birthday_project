@@ -1,6 +1,10 @@
 import type { Request, Response, NextFunction } from "express";
-import { signupSchema, loginSchema } from "./auth.schema";
-import * as authService from "./auth.service";
+import {
+  signupSchema,
+  loginSchema,
+  requestCodeSchema,
+  verifyCodeSchema,
+} from "./auth.schema";import * as authService from "./auth.service";
 
 export async function signup(req: Request, res: Response, next: NextFunction) {
   try {
@@ -42,4 +46,35 @@ export async function me(req: Request, res: Response, next: NextFunction) {
 
 export async function logout(_req: Request, res: Response) {
   return res.status(204).send();
+}
+
+
+export async function requestCode(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const input = requestCodeSchema.parse(req.body);
+    const result = await authService.requestCode(input);
+
+    return res.json(result);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function verifyCode(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const input = verifyCodeSchema.parse(req.body);
+    const result = await authService.verifyCode(input);
+
+    return res.json(result);
+  } catch (error) {
+    return next(error);
+  }
 }

@@ -21,7 +21,7 @@ export async function collectBirthday(
     }
 
     const request = await publicService.submitBirthdayRequest(
-      req.params.token as string,
+      req.params.token,
       input
     );
 
