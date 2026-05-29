@@ -17,18 +17,21 @@ export const transporter = isSmtpConfigured
         user: env.SMTP_USER,
         pass: env.SMTP_PASS,
       },
+      connectionTimeout: 5000,
+      greetingTimeout: 5000,
+      socketTimeout: 10000,
     })
   : null;
 
 export async function sendVerificationCodeEmail(
   email: string,
   code: string
-) {
+): Promise<boolean> {
   if (!isSmtpConfigured || !transporter) {
     console.log("==========================================");
     console.log(`📧 [SMTP NOT CONFIGURED] Verification Code for ${email}: ${code}`);
     console.log("==========================================");
-    return;
+    return false;
   }
 
   try {
@@ -52,10 +55,12 @@ export async function sendVerificationCodeEmail(
         </div>
       `,
     });
+    return true;
   } catch (error) {
     console.error("Failed to send verification email via SMTP:", error);
     console.log("==========================================");
     console.log(`📧 [Fallback] Verification Code for ${email}: ${code}`);
     console.log("==========================================");
+    return false;
   }
 }

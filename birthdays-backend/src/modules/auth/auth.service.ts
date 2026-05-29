@@ -132,14 +132,12 @@ export async function requestCode(input: RequestCodeInput) {
     },
   });
 
-  // For now, we return the code so we can test locally.
-  // Later we will send it by email and remove it from the response.
-  await sendVerificationCodeEmail(email, code);
+  const sent = await sendVerificationCodeEmail(email, code);
 
   return {
     message: "Verification code sent.",
     email,
-    ...(env.NODE_ENV === "development" || !isSmtpConfigured ? { code } : {}),
+    ...(env.NODE_ENV === "development" || !isSmtpConfigured || !sent ? { code } : {}),
   };
 }
 
