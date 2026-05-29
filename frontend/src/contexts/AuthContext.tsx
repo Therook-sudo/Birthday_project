@@ -25,6 +25,7 @@ interface AuthContextValue {
   requestCode: (payload: RequestCodePayload) => Promise<RequestCodeResponse>;
   verifyCode: (payload: VerifyCodePayload) => Promise<void>;
   logout: () => Promise<void>;
+  signup: (payload: any) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -60,6 +61,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  const signup = useCallback(async (payload: any) => {
+    const res = await authService.signup(payload);
+    setUser(res.user);
+  }, []);
+
   const requestCode = useCallback(async (payload: RequestCodePayload) => {
     return authService.requestCode(payload);
   }, []);
@@ -82,8 +88,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       requestCode,
       verifyCode,
       logout,
+      signup,
     }),
-    [user, loading, requestCode, verifyCode, logout]
+    [user, loading, requestCode, verifyCode, logout, signup]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

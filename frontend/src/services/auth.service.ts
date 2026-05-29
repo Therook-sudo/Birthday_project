@@ -20,6 +20,35 @@ export interface RequestCodeResponse {
 }
 
 export const authService = {
+  async signup(
+    payload: any
+  ): Promise<AuthResponse> {
+    if (!hasApi()) {
+      const res: AuthResponse = {
+        user: {
+          ...mockUser,
+          email: payload.email,
+          fullName: payload.fullName,
+        },
+        accessToken: "mock-token",
+      };
+
+      setAccessToken(res.accessToken);
+
+      return mockResolve(res);
+    }
+
+    const res = await api.post<AuthResponse>(
+      "/auth/signup",
+      payload,
+      { auth: false }
+    );
+
+    setAccessToken(res.accessToken);
+
+    return res;
+  },
+
   async requestCode(
     payload: RequestCodePayload
   ): Promise<RequestCodeResponse> {
