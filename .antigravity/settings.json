@@ -1,0 +1,22 @@
+{
+  "workspaceName": "Birthday_Project2",
+  "defaultModel": "gemini-3.5-flash",
+  "agentSettings": {
+    "temperature": 0.2,
+    "reviewDrivenDevelopment": true,
+    "allowedActions": [
+      "read_file",
+      "write_file",
+      "command"
+    ],
+    "excludeDirectories": [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/.git/**"
+    ]
+  },
+  "syncSettings": {
+    "sharedDirectory": "C:\\Users\\Lenovo\\.gemini\\antigravity",
+    "ideDirectory": "C:\\Users\\Lenovo\\.gemini\\antigravity-ide"
+  }
+}

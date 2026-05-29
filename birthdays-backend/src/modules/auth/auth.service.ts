@@ -8,7 +8,7 @@ import type {
   RequestCodeInput,
   VerifyCodeInput,
 } from "./auth.schema";
-import { sendVerificationCodeEmail } from "../../utils/mailer";
+import { sendVerificationCodeEmail, isSmtpConfigured } from "../../utils/mailer";
 function createAccessToken(user: {
   id: string;
   email: string;
@@ -136,10 +136,11 @@ export async function requestCode(input: RequestCodeInput) {
   // Later we will send it by email and remove it from the response.
   await sendVerificationCodeEmail(email, code);
 
-return {
-  message: "Verification code sent.",
-  email,
-};
+  return {
+    message: "Verification code sent.",
+    email,
+    ...(env.NODE_ENV === "development" || !isSmtpConfigured ? { code } : {}),
+  };
 }
 
 export async function verifyCode(input: VerifyCodeInput) {

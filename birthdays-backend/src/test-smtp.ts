@@ -44,6 +44,14 @@ async function testSMTP() {
     console.log("Verifying SMTP connection credentials...");
   }
 
+  if (!testTransporter) {
+    console.error("❌ SMTP is not configured in your environment variables (.env).");
+    console.log("Please define SMTP_HOST, SMTP_PORT, SMTP_USER, and SMTP_PASS first.");
+    console.log("Or run with Ethereal flag to test with a temporary virtual mailer:");
+    console.log("   npx tsx src/test-smtp.ts --ethereal");
+    return;
+  }
+
   try {
     // 1. Verify connection configuration
     await testTransporter.verify();

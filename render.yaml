@@ -6,7 +6,7 @@ services:
     plan: free
     rootDir: birthdays-backend
     buildCommand: npm install --include=dev && npx prisma generate && npm run build
-    startCommand: node dist/index.js
+    startCommand: npx prisma migrate deploy && node dist/index.js
     healthCheckPath: /api/health
     envVars:
       - key: DATABASE_URL
@@ -21,6 +21,16 @@ services:
         value: production
       - key: PORT
         value: "10000"
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
 
   - type: web
     name: birthdays-frontend
