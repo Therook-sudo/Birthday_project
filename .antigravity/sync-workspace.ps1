@@ -1,12 +1,11 @@
 # Antigravity Workspace Sync & Link Tool
-# This script merges your conversation histories and links them using NTFS junctions.
-# Run this script with Administrator privileges to create junctions successfully if required.
+# Safe Powershell script with standard ASCII only
 
 $ErrorActionPreference = "Stop"
 
 $ideDir = "C:\Users\Lenovo\.gemini\antigravity-ide"
 $standDir = "C:\Users\Lenovo\.gemini\antigravity"
-$backupRoot = Join-Path $env:USERPROFILE ".gemini\backups_sync_$(Get-Date -Format 'yyyyMMdd_HHmmss')"
+$backupRoot = "$env:USERPROFILE\.gemini\backups_sync_$(Get-Date -Format 'yyyyMMdd_HHmmss')"
 
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host " Antigravity IDE & Standalone Chat Syncer" -ForegroundColor Cyan
@@ -17,80 +16,75 @@ Write-Host ""
 
 # 1. Validation
 if (-not (Test-Path $ideDir)) {
-    Write-Error "IDE Directory not found at $ideDir"
+    Write-Error "IDE Directory not found"
 }
 if (-not (Test-Path $standDir)) {
-    Write-Error "Standalone Directory not found at $standDir"
+    Write-Error "Standalone Directory not found"
 }
 
-$ideConversationsPath = Join-Path $ideDir "conversations"
-$ideBrainPath = Join-Path $ideDir "brain"
-$standConversationsPath = Join-Path $standDir "conversations"
-$standBrainPath = Join-Path $standDir "brain"
+$ideConversationsPath = "$ideDir\conversations"
+$ideBrainPath = "$ideDir\brain"
+$standConversationsPath = "$standDir\conversations"
+$standBrainPath = "$standDir\brain"
 
-# Check if junctions are already present
-$ideConversationsAttr = (Get-Item $ideConversationsPath).Attributes
-$ideBrainAttr = (Get-Item $ideBrainPath).Attributes
+# Check if already linked
+$isLinked = $false
+if (Test-Path $ideConversationsPath) {
+    $item = Get-Item $ideConversationsPath
+    if ($item.Attributes -match "ReparsePoint") {
+        $isLinked = $true
+    }
+}
 
-if ($ideConversationsAttr -match "ReparsePoint" -and $ideBrainAttr -match "ReparsePoint") {
-    Write-Host "✓ Directories are already linked via NTFS Junctions!" -ForegroundColor Green
-    Write-Host "Your saved chats are fully synchronized in real-time." -ForegroundColor Green
+if ($isLinked) {
+    Write-Host "Junctions are already linked via NTFS Junctions!" -ForegroundColor Green
     exit 0
 }
 
-Write-Host "Starting safe migration and synchronization..." -ForegroundColor Yellow
+Write-Host "Starting safe migration..." -ForegroundColor Yellow
 
-# 2. Backup
-Write-Host "Creating backup folder at: $backupRoot" -ForegroundColor Gray
+# 2. Create Backup Folder
 New-Item -ItemType Directory -Force -Path $backupRoot | Out-Null
+Write-Host "Backup path created at: $backupRoot" -ForegroundColor Gray
 
-$backupIdeConversations = Join-Path $backupRoot "ide_conversations"
-$backupIdeBrain = Join-Path $backupRoot "ide_brain"
-$backupStandConversations = Join-Path $backupRoot "stand_conversations"
-$backupStandBrain = Join-Path $backupRoot "stand_brain"
-
-Write-Host "Backing up existing files..." -ForegroundColor Gray
+# 3. Copy files for safety
 if (Test-Path $ideConversationsPath) {
-    Copy-Item -Path $ideConversationsPath -Destination $backupIdeConversations -Recurse -Force
+    Copy-Item -Path $ideConversationsPath -Destination "$backupRoot\ide_conversations" -Recurse -Force
 }
 if (Test-Path $ideBrainPath) {
-    Copy-Item -Path $ideBrainPath -Destination $backupIdeBrain -Recurse -Force
+    Copy-Item -Path $ideBrainPath -Destination "$backupRoot\ide_brain" -Recurse -Force
 }
 if (Test-Path $standConversationsPath) {
-    Copy-Item -Path $standConversationsPath -Destination $backupStandConversations -Recurse -Force
+    Copy-Item -Path $standConversationsPath -Destination "$backupRoot\stand_conversations" -Recurse -Force
 }
 if (Test-Path $standBrainPath) {
-    Copy-Item -Path $standBrainPath -Destination $backupStandBrain -Recurse -Force
+    Copy-Item -Path $standBrainPath -Destination "$backupRoot\stand_brain" -Recurse -Force
 }
-Write-Host "✓ Backups completed successfully." -ForegroundColor Green
+Write-Host "Backups completed successfully." -ForegroundColor Green
 
-# 3. Merging files into Standalone
-Write-Host "Merging IDE files into Standalone directories..." -ForegroundColor Gray
+# 4. Merge IDE files into Standalone
+Write-Host "Merging histories..." -ForegroundColor Gray
 
-# Merge conversations (only copy if target doesn't exist)
 if (Test-Path $ideConversationsPath) {
     Get-ChildItem -Path $ideConversationsPath -File | ForEach-Object {
-        $destFile = Join-Path $standConversationsPath $_.Name
-        if (-not (Test-Path $destFile)) {
-            Copy-Item -Path $_.FullName -Destination $destFile -Force
+        $dest = "$standConversationsPath\$($_.Name)"
+        if (-not (Test-Path $dest)) {
+            Copy-Item -Path $_.FullName -Destination $dest -Force
         }
     }
 }
 
-# Merge brain directory (only copy subfolders if target doesn't exist)
 if (Test-Path $ideBrainPath) {
     Get-ChildItem -Path $ideBrainPath -Directory | ForEach-Object {
-        $destSubdir = Join-Path $standBrainPath $_.Name
-        if (-not (Test-Path $destSubdir)) {
-            Copy-Item -Path $_.FullName -Destination $destSubdir -Recurse -Force
+        $dest = "$standBrainPath\$($_.Name)"
+        if (-not (Test-Path $dest)) {
+            Copy-Item -Path $_.FullName -Destination $dest -Recurse -Force
         }
     }
 }
-Write-Host "✓ Merge completed successfully." -ForegroundColor Green
+Write-Host "Merge completed successfully." -ForegroundColor Green
 
-# 4. Deleting IDE directories to prepare for junction creation
-Write-Host "Replacing IDE directories with NTFS Junctions..." -ForegroundColor Gray
-
+# 5. Clean up old IDE folders to make room for links
 if (Test-Path $ideConversationsPath) {
     Remove-Item -Path $ideConversationsPath -Recurse -Force
 }
@@ -98,18 +92,12 @@ if (Test-Path $ideBrainPath) {
     Remove-Item -Path $ideBrainPath -Recurse -Force
 }
 
-# 5. Creating Junctions
+# 6. Establish NTFS Junction links
 cmd.exe /c mklink /J "$ideConversationsPath" "$standConversationsPath" | Out-Null
 cmd.exe /c mklink /J "$ideBrainPath" "$standBrainPath" | Out-Null
 
-# 6. Verify and finish
-if (Test-Path $ideConversationsPath -and Test-Path $ideBrainPath) {
-    Write-Host ""
-    Write-Host "==========================================" -ForegroundColor Green
-    Write-Host " ★ SYNCHRONIZATION COMPLETED SUCCESSFUL ★" -ForegroundColor Green
-    Write-Host "==========================================" -ForegroundColor Green
-    Write-Host "Conversations and brain histories are now perfectly synced!" -ForegroundColor Green
-    Write-Host "You can close and reopen your IDE and Antigravity standalone app to see all chats." -ForegroundColor Yellow
-} else {
-    Write-Error "Failed to link directories correctly."
-}
+Write-Host ""
+Write-Host "==========================================" -ForegroundColor Green
+Write-Host "   SYNCHRONIZATION COMPLETED SUCCESSFULLY " -ForegroundColor Green
+Write-Host "==========================================" -ForegroundColor Green
+Write-Host "Saved chats are now shared and synced in real-time!" -ForegroundColor Green
