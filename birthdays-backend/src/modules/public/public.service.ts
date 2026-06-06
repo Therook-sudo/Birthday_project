@@ -25,7 +25,6 @@ export async function submitBirthdayRequest(
       month: input.month,
       year: input.year ?? null,
       hideYear: input.hideYear,
-      religion: input.religion ?? null,
       socials: input.socials ?? {},
     },
   });

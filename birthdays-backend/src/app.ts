@@ -15,6 +15,7 @@ import { shareRouter } from "./modules/share/share.routes";
 import { publicRouter } from "./modules/public/public.routes";
 import { verifyJwt } from "./middleware/auth";
 import { notificationsRouter } from "./modules/notifications/notifications.routes";
+import { wishlistRouter } from "./modules/wishlist/wishlist.routes";
 export const app = express();
 
 app.use(helmet());
@@ -55,6 +56,7 @@ app.use("/api/dashboard", verifyJwt, dashboardRouter);
 app.use("/api/share", verifyJwt, shareRouter);
 app.use("/api/public", publicRouter);
 app.use("/api/notifications", notificationsRouter);
+app.use("/api/wishlist", wishlistRouter);
 
 // Centralized Global Error Handler
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

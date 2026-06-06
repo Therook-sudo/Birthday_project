@@ -53,7 +53,6 @@ export async function createBirthday(
       month: input.month,
       year: input.year ?? null,
       hideYear: input.hideYear,
-      religion: input.religion ?? null,
       socials: input.socials ?? {},
     },
   });
@@ -149,7 +148,6 @@ export async function updateBirthday(
       month: input.month,
       year: input.year ?? null,
       hideYear: input.hideYear,
-      religion: input.religion ?? null,
       socials: input.socials ?? {},
     },
   });
@@ -209,7 +207,6 @@ export async function acceptBirthdayRequest(ownerId: string, requestId: string) 
       month: request.month,
       year: request.year,
       hideYear: request.hideYear,
-      religion: request.religion,
       socials: request.socials ?? {},
     },
   });
@@ -256,7 +253,6 @@ export async function acceptAllBirthdayRequests(ownerId: string) {
         month: request.month,
         year: request.year,
         hideYear: request.hideYear,
-        religion: request.religion,
         socials: request.socials ?? {},
       },
     });

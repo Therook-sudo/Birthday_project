@@ -8,25 +8,23 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-enum Religion {
-  christian
-  muslim
-  none
-}
-
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  fullName     String
-  avatarUrl    String?
-  isPremium    Boolean  @default(false)
-  shareToken   String?  @unique
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                 String            @id @default(cuid())
+  email              String            @unique
+  passwordHash       String
+  fullName           String
+  avatarUrl          String?
+  isPremium          Boolean           @default(false)
+  shareToken         String?           @unique
+  birthDate          DateTime?
+  securityQuestion   String?
+  securityAnswerHash String?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
 
   birthdays        Birthday[]
   birthdayRequests BirthdayRequest[]
+  wishlistItems    WishlistItem[]
 }
 
 model Birthday {
@@ -39,7 +37,6 @@ model Birthday {
   month     Int
   year      Int?
   hideYear  Boolean  @default(true)
-  religion  Religion?
   socials   Json?
 
   createdAt DateTime @default(now())
@@ -59,7 +56,6 @@ model BirthdayRequest {
   month     Int
   year      Int?
   hideYear  Boolean  @default(true)
-  religion  Religion?
   socials   Json?
 
   createdAt DateTime @default(now())
@@ -76,4 +72,18 @@ model VerificationCode {
   createdAt DateTime @default(now())
 
   @@index([email])
+}
+
+model WishlistItem {
+  id        String   @id @default(cuid())
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name      String
+  link      String?
+  note      String?
+  priority  String   @default("Medium")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ownerId])
 }

@@ -25,7 +25,7 @@ export async function listByUser(
   next: NextFunction
 ) {
   try {
-    const items = await wishlistService.listByUser(req.params.userId);
+    const items = await wishlistService.listByUser(req.params.userId as string);
     return res.json(items);
   } catch (error) {
     return next(error);
@@ -61,7 +61,7 @@ export async function removeItem(
       return res.status(401).json({ message: "Authentication required." });
     }
 
-    await wishlistService.removeItem(req.user.id, req.params.id);
+    await wishlistService.removeItem(req.user.id, req.params.id as string);
 
     return res.status(204).send();
   } catch (error) {
