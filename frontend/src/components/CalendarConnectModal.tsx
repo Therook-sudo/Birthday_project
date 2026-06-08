@@ -11,6 +11,8 @@ import { Check, Loader2 } from "lucide-react";
 import { calendarService } from "@/services/calendar.service";
 import { hasApi, getAccessToken } from "@/lib/api";
 import type { CalendarProvider } from "@/lib/types";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 interface CalendarConnectModalProps {
   open: boolean;
@@ -26,6 +28,8 @@ const labelFor: Record<CalendarProvider, string> = {
 
 export function CalendarConnectModal({ open, onOpenChange, provider }: CalendarConnectModalProps) {
   const [stage, setStage] = useState<"intro" | "connecting" | "done">("intro");
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (open) setStage("intro");
@@ -33,6 +37,12 @@ export function CalendarConnectModal({ open, onOpenChange, provider }: CalendarC
 
   const start = async () => {
     if (!provider) return;
+
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
+    }
+
     // Real backend flow: fetch redirect URL and redirect browser.
     if (hasApi()) {
       try {
