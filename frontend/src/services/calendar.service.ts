@@ -8,6 +8,11 @@ export const calendarService = {
     return api.get<CalendarConnection[]>("/calendar/connections");
   },
 
+  async getConnectUrl(provider: CalendarProvider): Promise<{ url: string }> {
+    if (!hasApi()) return mockResolve({ url: "" });
+    return api.get<{ url: string }>(`/calendar/${provider}/connect`);
+  },
+
   /**
    * Returns the URL to redirect the user to start the OAuth flow.
    * The Express backend should expose `GET /calendar/:provider/connect`
