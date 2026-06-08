@@ -45,7 +45,7 @@ export async function createBirthday(
   ownerId: string,
   input: CreateBirthdayInput
 ) {
-  return prisma.birthday.create({
+  const birthday = await prisma.birthday.create({
     data: {
       ownerId,
       fullName: input.fullName,
@@ -56,6 +56,16 @@ export async function createBirthday(
       socials: input.socials ?? {},
     },
   });
+
+  // Auto-sync hook
+  try {
+    const { syncBirthdayToGoogle } = await import("../calendar/calendar.service");
+    await syncBirthdayToGoogle(ownerId, birthday.id);
+  } catch (err) {
+    console.error("🔴 Failed to trigger auto-sync on birthday creation:", err);
+  }
+
+  return birthday;
 }
 
 export async function getUpcomingBirthdays(ownerId: string) {
@@ -138,7 +148,7 @@ export async function updateBirthday(
     throw error;
   }
 
-  return prisma.birthday.update({
+  const updated = await prisma.birthday.update({
     where: {
       id: birthdayId,
     },
@@ -151,6 +161,16 @@ export async function updateBirthday(
       socials: input.socials ?? {},
     },
   });
+
+  // Auto-sync hook
+  try {
+    const { syncBirthdayToGoogle } = await import("../calendar/calendar.service");
+    await syncBirthdayToGoogle(ownerId, updated.id);
+  } catch (err) {
+    console.error("🔴 Failed to trigger auto-sync on birthday update:", err);
+  }
+
+  return updated;
 }
 
 export async function deleteBirthday(
@@ -170,11 +190,23 @@ export async function deleteBirthday(
     throw error;
   }
 
-  return prisma.birthday.delete({
+  const deleted = await prisma.birthday.delete({
     where: {
       id: birthdayId,
     },
   });
+
+  // Auto-sync hook
+  if (deleted.googleEventId) {
+    try {
+      const { deleteBirthdayFromGoogle } = await import("../calendar/calendar.service");
+      await deleteBirthdayFromGoogle(ownerId, deleted.googleEventId);
+    } catch (err) {
+      console.error("🔴 Failed to trigger delete-sync on birthday deletion:", err);
+    }
+  }
+
+  return deleted;
 }
 
 
@@ -214,6 +246,14 @@ export async function acceptBirthdayRequest(ownerId: string, requestId: string) 
   await prisma.birthdayRequest.delete({
     where: { id: request.id },
   });
+
+  // Auto-sync hook
+  try {
+    const { syncBirthdayToGoogle } = await import("../calendar/calendar.service");
+    await syncBirthdayToGoogle(ownerId, birthday.id);
+  } catch (err) {
+    console.error("🔴 Failed to trigger auto-sync on accepting birthday request:", err);
+  }
 
   return birthday;
 }
@@ -258,6 +298,14 @@ export async function acceptAllBirthdayRequests(ownerId: string) {
     });
 
     birthdays.push(birthday);
+
+    // Auto-sync hook
+    try {
+      const { syncBirthdayToGoogle } = await import("../calendar/calendar.service");
+      await syncBirthdayToGoogle(ownerId, birthday.id);
+    } catch (err) {
+      console.error("🔴 Failed to trigger auto-sync on accepting request:", err);
+    }
   }
 
   await prisma.birthdayRequest.deleteMany({

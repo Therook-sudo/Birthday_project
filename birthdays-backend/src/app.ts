@@ -16,6 +16,7 @@ import { publicRouter } from "./modules/public/public.routes";
 import { verifyJwt } from "./middleware/auth";
 import { notificationsRouter } from "./modules/notifications/notifications.routes";
 import { wishlistRouter } from "./modules/wishlist/wishlist.routes";
+import { calendarRouter } from "./modules/calendar/calendar.routes";
 export const app = express();
 
 app.use(helmet());
@@ -57,6 +58,7 @@ app.use("/api/share", verifyJwt, shareRouter);
 app.use("/api/public", publicRouter);
 app.use("/api/notifications", notificationsRouter);
 app.use("/api/wishlist", wishlistRouter);
+app.use("/api/calendar", calendarRouter);
 
 // Centralized Global Error Handler
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

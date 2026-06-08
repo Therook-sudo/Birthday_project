@@ -22,9 +22,10 @@ model User {
   createdAt          DateTime          @default(now())
   updatedAt          DateTime          @updatedAt
 
-  birthdays        Birthday[]
-  birthdayRequests BirthdayRequest[]
-  wishlistItems    WishlistItem[]
+  birthdays           Birthday[]
+  birthdayRequests    BirthdayRequest[]
+  wishlistItems       WishlistItem[]
+  calendarConnections CalendarConnection[]
 }
 
 model Birthday {
@@ -38,6 +39,8 @@ model Birthday {
   year      Int?
   hideYear  Boolean  @default(true)
   socials   Json?
+
+  googleEventId String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -86,4 +89,20 @@ model WishlistItem {
   updatedAt DateTime @updatedAt
 
   @@index([ownerId])
+}
+
+model CalendarConnection {
+  id                 String    @id @default(cuid())
+  userId             String
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider           String    // "google", "microsoft", "apple"
+  accessToken        String
+  refreshToken       String?   // Offline refresh token
+  expiresAt          DateTime?
+  externalCalendarId String?   // Stores ID of the custom calendar created
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@unique([userId, provider])
+  @@index([userId])
 }
