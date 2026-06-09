@@ -4,7 +4,11 @@ import {
   loginSchema,
   requestCodeSchema,
   verifyCodeSchema,
-} from "./auth.schema";import * as authService from "./auth.service";
+  setSecurityQuestionSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} from "./auth.schema";
+import * as authService from "./auth.service";
 
 export async function signup(req: Request, res: Response, next: NextFunction) {
   try {
@@ -72,6 +76,58 @@ export async function verifyCode(
   try {
     const input = verifyCodeSchema.parse(req.body);
     const result = await authService.verifyCode(input);
+
+    return res.json(result);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function setSecurityQuestion(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    if (!req.user?.id) {
+      return res.status(401).json({
+        message: "Authentication required.",
+        code: "AUTH_REQUIRED",
+      });
+    }
+
+    const input = setSecurityQuestionSchema.parse(req.body);
+    const result = await authService.setSecurityQuestion(req.user.id, input);
+
+    return res.json(result);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function forgotPassword(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const input = forgotPasswordSchema.parse(req.body);
+    const result = await authService.forgotPassword(input);
+
+    return res.json(result);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function resetPassword(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const input = resetPasswordSchema.parse(req.body);
+    const result = await authService.resetPassword(input);
 
     return res.json(result);
   } catch (error) {

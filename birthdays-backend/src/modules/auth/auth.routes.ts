@@ -12,3 +12,7 @@ authRouter.post("/verify-code", authController.verifyCode);
 
 authRouter.get("/me", verifyJwt, authController.me);
 authRouter.post("/logout", verifyJwt, authController.logout);
+
+authRouter.post("/security-question", verifyJwt, authController.setSecurityQuestion);
+authRouter.post("/forgot-password", authController.forgotPassword);
+authRouter.post("/reset-password", authController.resetPassword);

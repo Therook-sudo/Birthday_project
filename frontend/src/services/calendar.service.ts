@@ -13,8 +13,8 @@ export const calendarService = {
    * The Express backend should expose `GET /calendar/:provider/connect`
    * which 302-redirects to the provider's OAuth consent screen.
    */
-  oauthStartUrl(provider: CalendarProvider): string {
-    return `${API_BASE}/calendar/${provider}/connect`;
+  oauthStartUrl(provider: CalendarProvider, token: string): string {
+    return `${API_BASE}/calendar/${provider}/connect?token=${encodeURIComponent(token)}`;
   },
 
   async disconnect(provider: CalendarProvider): Promise<void> {

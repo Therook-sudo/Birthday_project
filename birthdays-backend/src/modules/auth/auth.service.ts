@@ -7,6 +7,9 @@ import type {
   SignupInput,
   RequestCodeInput,
   VerifyCodeInput,
+  SetSecurityQuestionInput,
+  ForgotPasswordInput,
+  ResetPasswordInput,
 } from "./auth.schema";
 import { sendVerificationCodeEmail, isSmtpConfigured } from "../../utils/mailer";
 function createAccessToken(user: {
@@ -27,21 +30,16 @@ function createAccessToken(user: {
   );
 }
 
-function toSafeUser(user: {
-  id: string;
-  email: string;
-  fullName: string;
-  avatarUrl: string | null;
-  isPremium: boolean;
-  createdAt: Date;
-}) {
+function toSafeUser(user: any) {
   return {
     id: user.id,
     email: user.email,
     fullName: user.fullName,
     avatarUrl: user.avatarUrl,
     isPremium: user.isPremium,
-    createdAt: user.createdAt.toISOString(),
+    birthDate: user.birthDate ? (user.birthDate instanceof Date ? user.birthDate.toISOString() : user.birthDate) : null,
+    securityQuestion: user.securityQuestion,
+    createdAt: user.createdAt instanceof Date ? user.createdAt.toISOString() : user.createdAt,
   };
 }
 
@@ -63,6 +61,7 @@ export async function signup(input: SignupInput) {
       fullName: input.fullName,
       email: input.email.toLowerCase(),
       passwordHash,
+      birthDate: input.birthDate ? new Date(input.birthDate) : null,
     },
   });
 
@@ -190,4 +189,87 @@ export async function verifyCode(input: VerifyCodeInput) {
     user: toSafeUser(user),
     accessToken,
   };
+}
+
+export async function setSecurityQuestion(
+  userId: string,
+  input: SetSecurityQuestionInput
+) {
+  const securityAnswerHash = await bcrypt.hash(
+    input.securityAnswer.toLowerCase().trim(),
+    12
+  );
+
+  const user = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      securityQuestion: input.securityQuestion,
+      securityAnswerHash,
+    },
+  });
+
+  return toSafeUser(user);
+}
+
+export async function forgotPassword(input: ForgotPasswordInput) {
+  const user = await prisma.user.findUnique({
+    where: { email: input.email.toLowerCase() },
+  });
+
+  if (!user) {
+    const error = new Error("No user found with this email address.");
+    (error as any).statusCode = 404;
+    throw error;
+  }
+
+  if (!user.securityQuestion) {
+    const error = new Error("No security question has been set for this account.");
+    (error as any).statusCode = 400;
+    throw error;
+  }
+
+  return {
+    email: user.email,
+    securityQuestion: user.securityQuestion,
+  };
+}
+
+export async function resetPassword(input: ResetPasswordInput) {
+  const user = await prisma.user.findUnique({
+    where: { email: input.email.toLowerCase() },
+  });
+
+  if (!user) {
+    const error = new Error("No user found with this email address.");
+    (error as any).statusCode = 404;
+    throw error;
+  }
+
+  if (!user.securityAnswerHash) {
+    const error = new Error("No security question has been set for this account.");
+    (error as any).statusCode = 400;
+    throw error;
+  }
+
+  const isAnswerValid = await bcrypt.compare(
+    input.securityAnswer.toLowerCase().trim(),
+    user.securityAnswerHash
+  );
+
+  if (!isAnswerValid) {
+    const error = new Error("Incorrect answer to security question.");
+    (error as any).statusCode = 401;
+    throw error;
+  }
+
+  const passwordHash = await bcrypt.hash(input.newPassword, 12);
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      passwordHash,
+    },
+  });
+
+  return { message: "Password reset successfully." };
 }

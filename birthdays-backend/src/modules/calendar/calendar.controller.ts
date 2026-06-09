@@ -10,7 +10,11 @@ export async function connectGoogle(req: Request, res: Response, next: NextFunct
     }
 
     const authUrl = calendarService.getGoogleAuthUrl(userId);
-    return res.json({ url: authUrl });
+
+    if (req.headers.accept?.includes("application/json") || req.xhr) {
+      return res.json({ url: authUrl });
+    }
+    return res.redirect(authUrl);
   } catch (err) {
     return next(err);
   }

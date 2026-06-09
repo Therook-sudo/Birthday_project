@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Check, Loader2 } from "lucide-react";
 import { calendarService } from "@/services/calendar.service";
-import { hasApi } from "@/lib/api";
+import { hasApi, getAccessToken } from "@/lib/api";
 import type { CalendarProvider } from "@/lib/types";
 
 interface CalendarConnectModalProps {
@@ -35,8 +35,11 @@ export function CalendarConnectModal({ open, onOpenChange, provider }: CalendarC
     if (!provider) return;
     // Real backend flow: redirect to Express OAuth start endpoint.
     if (hasApi()) {
-      window.location.href = calendarService.oauthStartUrl(provider);
-      return;
+      const token = getAccessToken();
+      if (token) {
+        window.location.href = calendarService.oauthStartUrl(provider, token);
+        return;
+      }
     }
     // Mock flow for static preview.
     setStage("connecting");
