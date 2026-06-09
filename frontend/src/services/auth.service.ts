@@ -2,97 +2,84 @@ import { api, hasApi, setAccessToken } from "@/lib/api";
 import type { AuthResponse, User } from "@/lib/types";
 import { mockResolve, mockUser } from "./mockData";
 
-export interface RequestCodePayload {
-  email: string;
-  fullName?: string;
+export interface SecurityQuestionPayload {
+  securityQuestion: string;
+  securityAnswer: string;
 }
 
-export interface VerifyCodePayload {
+export interface LoginPayload {
   email: string;
-  code: string;
-  fullName?: string;
+  password: string;
 }
 
-export interface RequestCodeResponse {
-  message: string;
+export interface SignupPayload {
+  fullName: string;
   email: string;
-  code?: string;
+  password: string;
+  birthDate?: string;
+}
+
+export interface SetSecurityQuestionPayload {
+  securityQuestion: string;
+  securityAnswer: string;
+}
+
+export interface ForgotPasswordPayload {
+  email: string;
+}
+
+export interface ForgotPasswordResponse {
+  email: string;
+  securityQuestion: string;
+}
+
+export interface ResetPasswordPayload {
+  email: string;
+  securityAnswer: string;
+  newPassword: string;
 }
 
 export const authService = {
-  async signup(
-    payload: any
-  ): Promise<AuthResponse> {
+  async login(payload: LoginPayload): Promise<AuthResponse> {
+    if (!hasApi()) {
+      const res: AuthResponse = {
+        user: { ...mockUser, email: payload.email },
+        accessToken: "mock-token",
+      };
+
+      setAccessToken(res.accessToken);
+      return mockResolve(res);
+    }
+
+    const res = await api.post<AuthResponse>("/auth/login", payload, {
+      auth: false,
+    });
+
+    setAccessToken(res.accessToken);
+    return res;
+  },
+
+  async signup(payload: SignupPayload): Promise<AuthResponse> {
     if (!hasApi()) {
       const res: AuthResponse = {
         user: {
           ...mockUser,
           email: payload.email,
           fullName: payload.fullName,
+          birthDate: payload.birthDate,
         },
         accessToken: "mock-token",
       };
 
       setAccessToken(res.accessToken);
-
       return mockResolve(res);
     }
 
-    const res = await api.post<AuthResponse>(
-      "/auth/signup",
-      payload,
-      { auth: false }
-    );
+    const res = await api.post<AuthResponse>("/auth/signup", payload, {
+      auth: false,
+    });
 
     setAccessToken(res.accessToken);
-
-    return res;
-  },
-
-  async requestCode(
-    payload: RequestCodePayload
-  ): Promise<RequestCodeResponse> {
-    if (!hasApi()) {
-      return mockResolve({
-        message: "Verification code sent.",
-        email: payload.email,
-        code: "12345",
-      });
-    }
-
-    return api.post<RequestCodeResponse>(
-      "/auth/request-code",
-      payload,
-      { auth: false }
-    );
-  },
-
-  async verifyCode(
-    payload: VerifyCodePayload
-  ): Promise<AuthResponse> {
-    if (!hasApi()) {
-      const res: AuthResponse = {
-        user: {
-          ...mockUser,
-          email: payload.email,
-          fullName: payload.fullName || mockUser.fullName,
-        },
-        accessToken: "mock-token",
-      };
-
-      setAccessToken(res.accessToken);
-
-      return mockResolve(res);
-    }
-
-    const res = await api.post<AuthResponse>(
-      "/auth/verify-code",
-      payload,
-      { auth: false }
-    );
-
-    setAccessToken(res.accessToken);
-
     return res;
   },
 
@@ -100,6 +87,52 @@ export const authService = {
     if (!hasApi()) return mockResolve(mockUser);
 
     return api.get<User>("/auth/me");
+  },
+
+  async setSecurityQuestion(
+    payload: SetSecurityQuestionPayload
+  ): Promise<User> {
+    if (!hasApi()) {
+      return mockResolve({
+        ...mockUser,
+        securityQuestion: payload.securityQuestion,
+      });
+    }
+
+    return api.post<User>("/auth/security-question", payload);
+  },
+
+  async forgotPassword(
+    payload: ForgotPasswordPayload
+  ): Promise<ForgotPasswordResponse> {
+    if (!hasApi()) {
+      return mockResolve({
+        email: payload.email,
+        securityQuestion: "What is your first school name?",
+      });
+    }
+
+    return api.post<ForgotPasswordResponse>(
+      "/auth/forgot-password",
+      payload,
+      { auth: false }
+    );
+  },
+
+  async resetPassword(
+    payload: ResetPasswordPayload
+  ): Promise<{ message: string }> {
+    if (!hasApi()) {
+      return mockResolve({
+        message: "Password reset successfully.",
+      });
+    }
+
+    return api.post<{ message: string }>(
+      "/auth/reset-password",
+      payload,
+      { auth: false }
+    );
   },
 
   async logout(): Promise<void> {
@@ -113,4 +146,7 @@ export const authService = {
       /* ignore */
     }
   },
+
+
+  
 };

@@ -29,7 +29,7 @@ import { useNavigate } from "react-router-dom";
 import { useCreateBirthday } from "@/hooks/useBirthdays";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import type { ApiError, ReligionCategory } from "@/lib/types";
+import type { ApiError } from "@/lib/types";
 
 const days = Array.from({ length: 31 }, (_, i) => i + 1);
 const months = [
@@ -44,16 +44,15 @@ export default function AddBirthday() {
   const [hideYear, setHideYear] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
-    fullName: "",
-    day: "",
-    month: "",
-    year: "",
-    religion: "",
-    linkedin: "",
-    instagram: "",
-    facebook: "",
-    twitter: "",
-  });
+  fullName: "",
+  day: "",
+  month: "",
+  year: "",
+  linkedin: "",
+  instagram: "",
+  facebook: "",
+  twitter: "",
+});
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,7 +68,6 @@ export default function AddBirthday() {
         month: parseInt(formData.month, 10),
         year: !hideYear && formData.year ? parseInt(formData.year, 10) : null,
         hideYear,
-        religion: (formData.religion || null) as ReligionCategory | null,
         socials: {
           linkedin: formData.linkedin || undefined,
           instagram: formData.instagram || undefined,
@@ -196,27 +194,6 @@ export default function AddBirthday() {
                   Hide birth year (recommended for privacy)
                 </Label>
               </div>
-            </div>
-
-            {/* Religion Category */}
-            <div className="mb-6">
-              <Label className="mb-2 block">Religion Category</Label>
-              <Select
-                value={formData.religion}
-                onValueChange={(value) => setFormData({ ...formData, religion: value })}
-              >
-                <SelectTrigger className="h-12">
-                  <SelectValue placeholder="Select category (optional)" />
-                </SelectTrigger>
-                <SelectContent className="bg-popover">
-                  <SelectItem value="christian">Christian</SelectItem>
-                  <SelectItem value="muslim">Muslim</SelectItem>
-                  <SelectItem value="none">None / Other</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="mt-2 text-xs text-muted-foreground">
-                Used to personalize birthday wishes
-              </p>
             </div>
 
             {/* Social Media Handles */}

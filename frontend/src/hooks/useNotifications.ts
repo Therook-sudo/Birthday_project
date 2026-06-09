@@ -9,14 +9,26 @@ export function useNotifications() {
   return useQuery({
     queryKey: notificationKeys.all,
     queryFn: () => notificationsService.list(),
-    refetchInterval: 60_000, // poll every minute
+    refetchInterval: 60_000,
   });
 }
 
 export function useMarkAllNotificationsRead() {
   const qc = useQueryClient();
+
   return useMutation({
     mutationFn: () => notificationsService.markAllRead(),
-    onSuccess: () => qc.invalidateQueries({ queryKey: notificationKeys.all }),
+
+    onSuccess: () => {
+      // Immediately remove all notifications from the UI
+      qc.setQueryData(notificationKeys.all, []);
+
+      // Optional: refresh after one minute
+      setTimeout(() => {
+        qc.invalidateQueries({
+          queryKey: notificationKeys.all,
+        });
+      }, 60000);
+    },
   });
 }

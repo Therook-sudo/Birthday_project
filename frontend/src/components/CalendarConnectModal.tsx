@@ -9,10 +9,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Check, Loader2 } from "lucide-react";
 import { calendarService } from "@/services/calendar.service";
-import { hasApi, getAccessToken } from "@/lib/api";
+import { hasApi } from "@/lib/api";
 import type { CalendarProvider } from "@/lib/types";
-import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
 
 interface CalendarConnectModalProps {
   open: boolean;
@@ -28,33 +26,17 @@ const labelFor: Record<CalendarProvider, string> = {
 
 export function CalendarConnectModal({ open, onOpenChange, provider }: CalendarConnectModalProps) {
   const [stage, setStage] = useState<"intro" | "connecting" | "done">("intro");
-  const { isAuthenticated } = useAuth();
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (open) setStage("intro");
   }, [open, provider]);
 
-  const start = async () => {
+  const start = () => {
     if (!provider) return;
-
-    if (!isAuthenticated) {
-      navigate("/login");
-      return;
-    }
-
-    // Real backend flow: fetch redirect URL and redirect browser.
+    // Real backend flow: redirect to Express OAuth start endpoint.
     if (hasApi()) {
-      try {
-        setStage("connecting");
-        const { url } = await calendarService.getConnectUrl(provider);
-        window.location.href = url;
-        return;
-      } catch (err) {
-        console.error("Failed to connect calendar:", err);
-        setStage("intro");
-        return;
-      }
+      window.location.href = calendarService.oauthStartUrl(provider);
+      return;
     }
     // Mock flow for static preview.
     setStage("connecting");

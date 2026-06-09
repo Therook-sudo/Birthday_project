@@ -7,8 +7,10 @@ export interface User {
   id: ID;
   email: string;
   fullName: string;
+  birthDate?: string | null;
   avatarUrl?: string | null;
   isPremium: boolean;
+  securityQuestion?: string | null;
   createdAt?: string;
 }
 
@@ -18,7 +20,6 @@ export interface AuthResponse {
   refreshToken?: string;
 }
 
-export type ReligionCategory = "christian" | "muslim" | "none";
 
 export interface Birthday {
   id: ID;
@@ -27,14 +28,13 @@ export interface Birthday {
   month: number;
   year?: number | null;
   hideYear: boolean;
-  religion?: ReligionCategory | null;
   socials?: {
     linkedin?: string;
     instagram?: string;
     facebook?: string;
     twitter?: string;
   };
-  status: "approved" | "pending";
+  status?: "approved" | "pending";
   ownerId?: ID;
   createdAt?: string;
 }
@@ -47,13 +47,20 @@ export interface UpcomingBirthday extends Birthday {
 
 export interface BirthdayRequest {
   id: ID;
-  name: string;
-  date: string;
-  email: string;
-  fullName?: string;
-  day?: number;
-  month?: number;
+  ownerId?: ID;
+  fullName: string;
+  email?: string | null;
+  day: number;
+  month: number;
   year?: number | null;
+  hideYear?: boolean;
+  socials?: {
+    linkedin?: string;
+    instagram?: string;
+    facebook?: string;
+    twitter?: string;
+  };
+  createdAt?: string;
 }
 
 export type WishlistPriority = "Low" | "Medium" | "High";

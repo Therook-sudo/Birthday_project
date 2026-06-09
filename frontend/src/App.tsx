@@ -14,6 +14,10 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
+import ForgotPassword from "./pages/ForgotPassword";
+import PublicCollectBirthday from "./pages/PublicCollectBirthday";
+import SecuritySettings from "./pages/SecuritySettings";
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -40,6 +44,13 @@ const App = () => (
             <Route path="/onboarding" element={<Onboarding />} />
             {/* Public wishlist view by user id */}
             <Route path="/wishlist/:userId" element={<Wishlist />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+
+            <Route
+              path="/u/:token/collect"
+              element={<PublicCollectBirthday />}
+            />
+
 
             {/* Authenticated */}
             <Route
@@ -71,6 +82,15 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Premium />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/settings/security"
+              element={
+                <ProtectedRoute>
+                  <SecuritySettings />
                 </ProtectedRoute>
               }
             />

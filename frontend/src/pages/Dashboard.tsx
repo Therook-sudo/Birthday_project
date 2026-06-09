@@ -1,3 +1,4 @@
+import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
@@ -40,6 +41,7 @@ export default function Dashboard() {
   const [shareOpen, setShareOpen] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const upcomingQuery = useUpcomingBirthdays();
   const monthlyQuery = useMonthlyBirthdays();
@@ -80,10 +82,10 @@ export default function Dashboard() {
   };
 
   const stats = [
-    { icon: Gift,  label: "Total Birthdays",      value: String(upcoming.length + Object.values(monthly).flat().length), color: "text-primary" },
-    { icon: Clock, label: "This Month",            value: String(upcoming.length),                                         color: "text-accent" },
-    { icon: Users, label: "Pending Requests",      value: String(pending.length),                                          color: "text-muted-foreground" },
-    { icon: Bell,  label: "Upcoming (7 days)",     value: String(upcoming.filter((b) => b.daysLeft <= 7).length),          color: "text-primary" },
+    { icon: Gift, label: "Total Birthdays", value: String(upcoming.length + Object.values(monthly).flat().length), color: "text-primary" },
+    { icon: Clock, label: "This Month", value: String(upcoming.length), color: "text-accent" },
+    { icon: Users, label: "Pending Requests", value: String(pending.length), color: "text-muted-foreground" },
+    { icon: Bell, label: "Upcoming (7 days)", value: String(upcoming.filter((b) => b.daysLeft <= 7).length), color: "text-primary" },
   ];
 
   return (
@@ -117,12 +119,44 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
+        {/* Security Question Alert */}
+        {!user?.securityQuestion && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mb-6"
+          >
+            <Alert className="p-4">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex gap-3">
+                  <AlertCircle className="mt-1 h-4 w-4 shrink-0" />
+                  <AlertDescription className="text-sm leading-relaxed">
+                    <strong>Secure your account.</strong>{" "}
+                    Add a recovery question so you can reset your password if needed.
+                  </AlertDescription>
+                </div>
+                <Button
+                  asChild
+                  size="sm"
+                  variant="outline"
+                  className="w-full sm:w-auto"
+                >
+                  <Link to="/settings/security">
+                    Setup Security Question
+                  </Link>
+                </Button>
+              </div>
+            </Alert>
+          </motion.div>
+        )}
+
         {/* Stats Cards */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="mb-8 grid gap-4 md:grid-cols-4"
+          className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
         >
           {stats.map((stat) => (
             <div key={stat.label} className="gradient-card rounded-xl border border-border p-6 shadow-soft">
@@ -144,20 +178,23 @@ export default function Dashboard() {
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="bg-muted/50">
-              <TabsTrigger value="upcoming" className="data-[state=active]:bg-background">
+            <TabsList className="flex h-auto w-full flex-wrap gap-2 bg-muted/50 p-1 sm:w-fit">
+              <TabsTrigger value="upcoming" className="flex items-center gap-2 data-[state=active]:bg-background">
                 <Clock className="mr-2 h-4 w-4" />
                 Upcoming
               </TabsTrigger>
-              <TabsTrigger value="monthly" className="data-[state=active]:bg-background">
+              <TabsTrigger value="monthly" className="flex items-center gap-2 data-[state=active]:bg-background">
                 <Calendar className="mr-2 h-4 w-4" />
                 By Month
               </TabsTrigger>
-              <TabsTrigger value="pending" className="data-[state=active]:bg-background">
+              <TabsTrigger value="pending" className="flex items-center gap-2 data-[state=active]:bg-background">
                 <Users className="mr-2 h-4 w-4" />
                 Pending
                 {pending.length > 0 && (
-                  <Badge variant="destructive" className="ml-2 h-5 w-5 rounded-full p-0 text-xs">
+                  <Badge
+                    variant="destructive"
+                    className="ml-2 flex h-5 min-w-[20px] items-center justify-center rounded-full px-1 text-[10px]"
+                  >
                     {pending.length}
                   </Badge>
                 )}
@@ -169,7 +206,12 @@ export default function Dashboard() {
               <div className="gradient-card rounded-xl border border-border p-6 shadow-soft">
                 <div className="mb-4 flex items-center justify-between">
                   <h2 className="text-lg font-semibold text-foreground">Upcoming Birthdays</h2>
-                  <Button variant="outline" size="sm" onClick={() => setCalendarOpen(true)}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCalendarOpen(true)}
+                    className="hidden sm:inline-flex"
+                  >
                     <Calendar className="mr-2 h-4 w-4" />
                     Add All to Calendar
                   </Button>
@@ -196,7 +238,7 @@ export default function Dashboard() {
                     {upcoming.map((b) => (
                       <div
                         key={b.id}
-                        className="flex items-center justify-between rounded-lg border border-border bg-background p-4 transition-colors hover:border-primary/30"
+                        className="flex flex-col gap-4 rounded-lg border border-border bg-background p-4 sm:flex-row sm:items-center sm:justify-between"
                       >
                         <div className="flex items-center gap-4">
                           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">
@@ -209,7 +251,7 @@ export default function Dashboard() {
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <Badge
                             variant={b.status === "approved" ? "default" : "secondary"}
                             className={b.status === "approved" ? "bg-primary/10 text-primary hover:bg-primary/20" : ""}
@@ -261,7 +303,7 @@ export default function Dashboard() {
                       {birthdays.map((b) => (
                         <div
                           key={b.id}
-                          className="flex items-center justify-between rounded-lg border border-border bg-background p-4"
+                          className="flex flex-col gap-4 rounded-lg border border-border bg-background p-4 sm:flex-row sm:items-center sm:justify-between"
                         >
                           <div className="flex items-center gap-3">
                             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
@@ -269,12 +311,14 @@ export default function Dashboard() {
                             </div>
                             <span className="font-medium text-foreground">{b.fullName}</span>
                           </div>
-                          <Badge
-                            variant={b.status === "approved" ? "default" : "secondary"}
-                            className={b.status === "approved" ? "bg-primary/10 text-primary hover:bg-primary/20" : ""}
-                          >
-                            {b.status === "approved" ? "Added" : "Pending"}
-                          </Badge>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge
+                              variant={b.status === "approved" ? "default" : "secondary"}
+                              className={b.status === "approved" ? "bg-primary/10 text-primary hover:bg-primary/20" : ""}
+                            >
+                              {b.status === "approved" ? "Added" : "Pending"}
+                            </Badge>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -310,15 +354,15 @@ export default function Dashboard() {
                     {pending.map((request) => (
                       <div
                         key={request.id}
-                        className="flex items-center justify-between rounded-lg border border-border bg-background p-4"
+                        className="flex flex-col gap-4 rounded-lg border border-border bg-background p-4 sm:flex-row sm:items-center sm:justify-between"
                       >
                         <div>
-                          <div className="font-medium text-foreground">{request.name}</div>
+                          <div className="font-medium text-foreground">{request.fullName}</div>
                           <div className="text-sm text-muted-foreground">
-                            {request.date} · {request.email}
+                            {request.day}/{request.month} · {request.email}
                           </div>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <Button
                             variant="outline"
                             size="sm"
