@@ -7,11 +7,8 @@ export function Footer() {
       <div className="container py-12">
         <div className="grid gap-8 md:grid-cols-4">
           <div className="space-y-4">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary">
-                <Gift className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <span className="text-xl font-semibold text-foreground">Birthdays</span>
+            <Link to="/" className="flex items-center">
+              <img src="/Merktag.png" alt="MerkTag" className="h-8 w-auto object-contain" />
             </Link>
             <p className="text-sm text-muted-foreground">
               Never forget a birthday again. Sync, remind, and celebrate with ease.

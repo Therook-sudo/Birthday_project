@@ -33,11 +33,8 @@ export function Navbar() {
       className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-lg"
     >
       <nav className="container flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary">
-            <Gift className="h-5 w-5 text-primary-foreground" />
-          </div>
-          <span className="text-xl font-semibold text-foreground">Birthdays</span>
+        <Link to="/" className="flex items-center">
+          <img src="/Merktag.png" alt="MerkTag" className="h-8 w-auto object-contain" />
         </Link>
 
         {/* Desktop Navigation */}
