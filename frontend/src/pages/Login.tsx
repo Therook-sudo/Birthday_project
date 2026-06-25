@@ -113,7 +113,8 @@ export default function Login() {
                 id="password"
                 type="password"
                 required
-                minLength={6}
+                minLength={1}
+                maxLength={128}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"

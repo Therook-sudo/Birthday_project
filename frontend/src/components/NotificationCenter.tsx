@@ -9,12 +9,14 @@ import {
 import { Link } from "react-router-dom";
 import {
   useMarkAllNotificationsRead,
+  useMarkNotificationRead,
   useNotifications,
 } from "@/hooks/useNotifications";
 
 export function NotificationCenter() {
   const { data, isLoading } = useNotifications();
   const markAll = useMarkAllNotificationsRead();
+  const markOne = useMarkNotificationRead();
   const notifications = data ?? [];
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -60,9 +62,9 @@ export function NotificationCenter() {
               <Link
                 key={n.id}
                 to={n.link}
-                className={`block border-b border-border px-4 py-3 transition-colors hover:bg-muted/50 ${
-                  !n.read ? "bg-primary/5" : ""
-                }`}
+                onClick={() => markOne.mutate(n.id)}
+                className={`block border-b border-border px-4 py-3 transition-colors hover:bg-muted/50 ${!n.read ? "bg-primary/5" : ""
+                  }`}
               >
                 <p className="text-sm text-foreground">{n.message}</p>
                 <span className="text-xs text-muted-foreground">{n.time}</span>

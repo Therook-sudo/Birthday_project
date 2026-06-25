@@ -1,5 +1,6 @@
 import { prisma } from "../../db/prisma";
 import type { CreateBirthdayInput } from "./birthdays.schema";
+import { syncBirthdayToGoogle } from "../calendar/calendar.service";
 
 function getInitials(name: string) {
   return name
@@ -49,6 +50,7 @@ export async function createBirthday(
     data: {
       ownerId,
       fullName: input.fullName,
+      phone: input.phone ?? null,
       day: input.day,
       month: input.month,
       year: input.year ?? null,
@@ -57,12 +59,10 @@ export async function createBirthday(
     },
   });
 
-  // Auto-sync hook
   try {
-    const { syncBirthdayToGoogle } = await import("../calendar/calendar.service");
     await syncBirthdayToGoogle(ownerId, birthday.id);
   } catch (err) {
-    console.error("🔴 Failed to trigger auto-sync on birthday creation:", err);
+    console.error("🔴 Failed to sync birthday to Google Calendar:", err);
   }
 
   return birthday;
@@ -154,6 +154,7 @@ export async function updateBirthday(
     },
     data: {
       fullName: input.fullName,
+      phone: input.phone ?? null,
       day: input.day,
       month: input.month,
       year: input.year ?? null,
@@ -235,6 +236,7 @@ export async function acceptBirthdayRequest(ownerId: string, requestId: string) 
     data: {
       ownerId,
       fullName: request.fullName,
+      phone: request.phone ?? null,
       day: request.day,
       month: request.month,
       year: request.year,
@@ -289,6 +291,7 @@ export async function acceptAllBirthdayRequests(ownerId: string) {
       data: {
         ownerId,
         fullName: request.fullName,
+        phone: request.phone ?? null,
         day: request.day,
         month: request.month,
         year: request.year,

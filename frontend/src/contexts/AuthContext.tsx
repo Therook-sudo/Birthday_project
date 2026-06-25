@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 import {
   authService,
@@ -24,13 +25,21 @@ interface AuthContextValue {
   login: (payload: LoginPayload) => Promise<void>;
   signup: (payload: SignupPayload) => Promise<void>;
   logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
+
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const refreshUser = useCallback(async () => {
+    const me = await authService.me();
+    setUser(me);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -48,6 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!cancelled) setUser(me);
       } catch {
         setAccessToken(null);
+        queryClient.clear();
         if (!cancelled) setUser(null);
       } finally {
         if (!cancelled) setLoading(false);
@@ -57,22 +67,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [queryClient]);
 
-  const login = useCallback(async (payload: LoginPayload) => {
-    const res = await authService.login(payload);
-    setUser(res.user);
-  }, []);
+  const login = useCallback(
+    async (payload: LoginPayload) => {
+      queryClient.clear();
 
-  const signup = useCallback(async (payload: SignupPayload) => {
-    const res = await authService.signup(payload);
-    setUser(res.user);
-  }, []);
+      const res = await authService.login(payload);
+      setUser(res.user);
+
+      queryClient.invalidateQueries();
+    },
+    [queryClient]
+  );
+
+  const signup = useCallback(
+    async (payload: SignupPayload) => {
+      queryClient.clear();
+
+      const res = await authService.signup(payload);
+      setUser(res.user);
+
+      queryClient.invalidateQueries();
+    },
+    [queryClient]
+  );
 
   const logout = useCallback(async () => {
     await authService.logout();
     setUser(null);
-  }, []);
+    queryClient.clear();
+  }, [queryClient]);
 
   const value = useMemo<AuthContextValue>(
     () => ({
@@ -82,8 +107,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       signup,
       logout,
+      refreshUser,
     }),
-    [user, loading, login, signup, logout]
+    [user, loading, login, signup, logout, refreshUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

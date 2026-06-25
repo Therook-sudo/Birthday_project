@@ -86,7 +86,7 @@ export function CalendarIntegration() {
                   </li>
                 ))}
               </ul>
-              <Button
+              {/* <Button
                 variant="calendar"
                 className="w-full"
                 onClick={() =>
@@ -100,7 +100,7 @@ export function CalendarIntegration() {
                 }
               >
                 Connect {calendar.name.split(" ")[0]}
-              </Button>
+              </Button> */}
             </motion.div>
           ))}
         </div>

@@ -57,7 +57,7 @@ app.use("/api/dashboard", verifyJwt, dashboardRouter);
 app.use("/api/share", verifyJwt, shareRouter);
 app.use("/api/public", publicRouter);
 app.use("/api/notifications", notificationsRouter);
-app.use("/api/wishlist", wishlistRouter);
+app.use("/api/wishlist", verifyJwt, wishlistRouter);
 app.use("/api/calendar", calendarRouter);
 
 // Centralized Global Error Handler

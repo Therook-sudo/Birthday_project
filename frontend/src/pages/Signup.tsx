@@ -20,6 +20,7 @@ export default function Signup() {
 
   const [form, setForm] = useState({
     name: "",
+    phone: "",
     email: "",
     birthDate: "",
     password: "",
@@ -28,13 +29,33 @@ export default function Signup() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
+    if (!acceptedTerms) {
+      setError("You must accept the Terms of Use and Privacy Policy.");
+      return;
+    }
+
     if (form.password !== form.confirmPassword) {
       setError("Passwords do not match.");
+      return;
+    }
+
+    const strongPassword =
+      form.password.length >= 8 &&
+      /[A-Z]/.test(form.password) &&
+      /[a-z]/.test(form.password) &&
+      /[0-9]/.test(form.password) &&
+      /[^A-Za-z0-9]/.test(form.password);
+
+    if (!strongPassword) {
+      setError(
+        "Password must be at least 8 characters and include uppercase, lowercase, number, and symbol."
+      );
       return;
     }
 
@@ -43,6 +64,7 @@ export default function Signup() {
     try {
       await signup({
         fullName: form.name,
+        phone: form.phone,
         email: form.email,
         birthDate: form.birthDate,
         password: form.password,
@@ -115,6 +137,21 @@ export default function Signup() {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="phone">
+                Phone Number
+              </Label>
+
+              <Input
+                id="phone"
+                type="tel"
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                placeholder="078 123 4567"
+                className="h-12"
+              />
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="email" className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-muted-foreground" />
                 Email
@@ -159,14 +196,20 @@ export default function Signup() {
                 id="password"
                 type="password"
                 required
-                minLength={6}
+                minLength={8}
+                maxLength={128}
                 value={form.password}
                 onChange={(e) =>
                   setForm({ ...form, password: e.target.value })
                 }
-                placeholder="At least 6 characters"
+                placeholder="Create a strong password"
                 className="h-12"
               />
+
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                Password must be at least 8 characters and include uppercase, lowercase,
+                number, and symbol.
+              </p>
             </div>
 
             <div className="space-y-2">
@@ -178,7 +221,7 @@ export default function Signup() {
                 id="confirmPassword"
                 type="password"
                 required
-                minLength={6}
+                minLength={8}
                 value={form.confirmPassword}
                 onChange={(e) =>
                   setForm({ ...form, confirmPassword: e.target.value })
@@ -188,12 +231,37 @@ export default function Signup() {
               />
             </div>
 
+            {/* Terms and Privacy Policy Checkbox */}
+            <div className="flex items-start gap-3 rounded-lg border border-border p-3">
+              <input
+                id="terms"
+                type="checkbox"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className="mt-1"
+              />
+
+              <label
+                htmlFor="terms"
+                className="text-sm text-muted-foreground"
+              >
+                I have read and agree to the{" "}
+                <Link
+                  to="/terms-and-privacy"
+                  target="_blank"
+                  className="text-primary hover:underline"
+                >
+                  Terms of Use & Privacy Policy
+                </Link>.
+              </label>
+            </div>
+
             <Button
               type="submit"
               variant="hero"
               size="lg"
               className="w-full"
-              disabled={loading}
+              disabled={loading || !acceptedTerms}
             >
               {loading ? "Creating…" : "Create Account"}
             </Button>

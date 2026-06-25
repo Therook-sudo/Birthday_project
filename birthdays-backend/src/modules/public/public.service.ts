@@ -21,6 +21,7 @@ export async function submitBirthdayRequest(
     data: {
       ownerId: owner.id,
       fullName: input.fullName,
+      phone: input.phone ?? null,
       day: input.day,
       month: input.month,
       year: input.year ?? null,

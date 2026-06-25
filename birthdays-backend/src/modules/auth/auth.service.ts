@@ -35,6 +35,7 @@ function toSafeUser(user: any) {
     id: user.id,
     email: user.email,
     fullName: user.fullName,
+    phone: user.phone,
     avatarUrl: user.avatarUrl,
     isPremium: user.isPremium,
     birthDate: user.birthDate ? (user.birthDate instanceof Date ? user.birthDate.toISOString() : user.birthDate) : null,
@@ -56,14 +57,15 @@ export async function signup(input: SignupInput) {
 
   const passwordHash = await bcrypt.hash(input.password, 12);
 
-  const user = await prisma.user.create({
-    data: {
-      fullName: input.fullName,
-      email: input.email.toLowerCase(),
-      passwordHash,
-      birthDate: input.birthDate ? new Date(input.birthDate) : null,
-    },
-  });
+const user = await prisma.user.create({
+  data: {
+    fullName: input.fullName,
+    phone: input.phone || null,
+    email: input.email.toLowerCase(),
+    passwordHash,
+    birthDate: input.birthDate ? new Date(input.birthDate) : null,
+  },
+});
 
   const accessToken = createAccessToken(user);
 

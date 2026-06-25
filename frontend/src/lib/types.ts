@@ -7,6 +7,7 @@ export interface User {
   id: ID;
   email: string;
   fullName: string;
+  phone?: string | null;
   birthDate?: string | null;
   avatarUrl?: string | null;
   isPremium: boolean;
@@ -24,6 +25,7 @@ export interface AuthResponse {
 export interface Birthday {
   id: ID;
   fullName: string;
+  phone?: string | null;
   day: number;
   month: number;
   year?: number | null;
@@ -49,6 +51,7 @@ export interface BirthdayRequest {
   id: ID;
   ownerId?: ID;
   fullName: string;
+  phone?: string | null;
   email?: string | null;
   day: number;
   month: number;

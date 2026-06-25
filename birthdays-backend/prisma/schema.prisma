@@ -13,6 +13,7 @@ model User {
   email              String            @unique
   passwordHash       String
   fullName           String
+  phone              String?
   avatarUrl          String?
   isPremium          Boolean           @default(false)
   shareToken         String?           @unique
@@ -34,6 +35,7 @@ model Birthday {
   owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
   fullName  String
+  phone     String?
   day       Int
   month     Int
   year      Int?
@@ -55,6 +57,7 @@ model BirthdayRequest {
 
   fullName  String
   email     String?
+  phone     String?
   day       Int
   month     Int
   year      Int?
@@ -95,14 +98,24 @@ model CalendarConnection {
   id                 String    @id @default(cuid())
   userId             String
   user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  provider           String    // "google", "microsoft", "apple"
+  provider           String
   accessToken        String
-  refreshToken       String?   // Offline refresh token
+  refreshToken       String?
   expiresAt          DateTime?
-  externalCalendarId String?   // Stores ID of the custom calendar created
+  externalCalendarId String?
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
   @@unique([userId, provider])
+  @@index([userId])
+}
+
+model NotificationRead {
+  id             String   @id @default(cuid())
+  userId         String
+  notificationId String
+  createdAt      DateTime @default(now())
+
+  @@unique([userId, notificationId])
   @@index([userId])
 }

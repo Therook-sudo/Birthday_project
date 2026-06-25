@@ -2,14 +2,28 @@ import { z } from "zod";
 
 export const signupSchema = z.object({
   fullName: z.string().trim().min(1).max(120),
+  phone: z.string().trim().max(30).optional().or(z.literal("")),
   email: z.string().email().max(255),
-  password: z.string().min(6).max(128),
-  birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format").optional().or(z.literal("")),
+
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters.")
+    .max(128, "Password must not be more than 128 characters.")
+    .regex(/[A-Z]/, "Password must include at least one uppercase letter.")
+    .regex(/[a-z]/, "Password must include at least one lowercase letter.")
+    .regex(/[0-9]/, "Password must include at least one number.")
+    .regex(/[^A-Za-z0-9]/, "Password must include at least one symbol."),
+
+  birthDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format")
+    .optional()
+    .or(z.literal("")),
 });
 
 export const loginSchema = z.object({
   email: z.string().email().max(255),
-  password: z.string().min(6).max(128),
+  password: z.string().min(1),
 });
 
 export type SignupInput = z.infer<typeof signupSchema>;
@@ -27,7 +41,14 @@ export const forgotPasswordSchema = z.object({
 export const resetPasswordSchema = z.object({
   email: z.string().email().max(255),
   securityAnswer: z.string().trim().min(1).max(255),
-  newPassword: z.string().min(6).max(128),
+  newPassword: z
+    .string()
+    .min(8, "Password must be at least 8 characters.")
+    .max(128, "Password must not be more than 128 characters.")
+    .regex(/[A-Z]/, "Password must include at least one uppercase letter.")
+    .regex(/[a-z]/, "Password must include at least one lowercase letter.")
+    .regex(/[0-9]/, "Password must include at least one number.")
+    .regex(/[^A-Za-z0-9]/, "Password must include at least one symbol."),
 });
 
 export type SetSecurityQuestionInput = z.infer<typeof setSecurityQuestionSchema>;

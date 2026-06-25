@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ShieldCheck, AlertCircle } from "lucide-react";
-
+import { useAuth } from "@/contexts/AuthContext";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import type { ApiError } from "@/lib/types";
 export default function SecuritySettings() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { refreshUser } = useAuth();
 
   const [securityQuestion, setSecurityQuestion] = useState("");
   const [securityAnswer, setSecurityAnswer] = useState("");
@@ -31,6 +32,8 @@ export default function SecuritySettings() {
         securityQuestion,
         securityAnswer,
       });
+
+      await refreshUser();
 
       toast({
         title: "Security question saved",

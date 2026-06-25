@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { notificationsService } from "@/services/notifications.service";
+import type { ID } from "@/lib/types";
 
 export const notificationKeys = {
   all: ["notifications"] as const,
@@ -20,15 +21,27 @@ export function useMarkAllNotificationsRead() {
     mutationFn: () => notificationsService.markAllRead(),
 
     onSuccess: () => {
-      // Immediately remove all notifications from the UI
       qc.setQueryData(notificationKeys.all, []);
 
-      // Optional: refresh after one minute
       setTimeout(() => {
         qc.invalidateQueries({
           queryKey: notificationKeys.all,
         });
       }, 60000);
+    },
+  });
+}
+
+export function useMarkNotificationRead() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: ID) => notificationsService.markRead(id),
+
+    onSuccess: () => {
+      qc.invalidateQueries({
+        queryKey: notificationKeys.all,
+      });
     },
   });
 }

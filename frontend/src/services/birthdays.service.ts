@@ -15,6 +15,7 @@ import {
 
 export interface CreateBirthdayPayload {
   fullName: string;
+  phone?: string | null;
   day: number;
   month: number;
   year?: number | null;

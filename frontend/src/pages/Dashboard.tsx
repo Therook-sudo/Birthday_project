@@ -81,12 +81,42 @@ export default function Dashboard() {
     }
   };
 
-  const stats = [
-    { icon: Gift, label: "Total Birthdays", value: String(upcoming.length + Object.values(monthly).flat().length), color: "text-primary" },
-    { icon: Clock, label: "This Month", value: String(upcoming.length), color: "text-accent" },
-    { icon: Users, label: "Pending Requests", value: String(pending.length), color: "text-muted-foreground" },
-    { icon: Bell, label: "Upcoming (7 days)", value: String(upcoming.filter((b) => b.daysLeft <= 7).length), color: "text-primary" },
-  ];
+ const allBirthdays = Object.values(monthly).flat();
+
+const currentMonth = new Date().getMonth() + 1;
+
+const thisMonthCount = allBirthdays.filter(
+  (birthday) => birthday.month === currentMonth
+).length;
+
+const stats = [
+  {
+    icon: Gift,
+    label: "Total Birthdays",
+    value: String(allBirthdays.length),
+    color: "text-primary",
+  },
+  {
+    icon: Clock,
+    label: "This Month",
+    value: String(thisMonthCount),
+    color: "text-accent",
+  },
+  {
+    icon: Users,
+    label: "Pending Requests",
+    value: String(pending.length),
+    color: "text-muted-foreground",
+  },
+  {
+    icon: Bell,
+    label: "Upcoming (7 days)",
+    value: String(
+      upcoming.filter((b) => b.daysLeft <= 7).length
+    ),
+    color: "text-primary",
+  },
+];
 
   return (
     <div className="min-h-screen bg-background">
@@ -251,20 +281,8 @@ export default function Dashboard() {
                             </div>
                           </div>
                         </div>
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Badge
-                            variant={b.status === "approved" ? "default" : "secondary"}
-                            className={b.status === "approved" ? "bg-primary/10 text-primary hover:bg-primary/20" : ""}
-                          >
-                            {b.status === "approved" ? (
-                              <>
-                                <Check className="mr-1 h-3 w-3" />
-                                Added
-                              </>
-                            ) : (
-                              "Pending"
-                            )}
-                          </Badge>
+                        {/* <div className="flex flex-wrap items-center gap-2">
+                        
                           <Button asChild variant="ghost" size="sm" className="text-xs">
                             <Link to={`/wishlist/${b.fullName.toLowerCase().split(" ")[0]}`}>
                               <Gift className="mr-1 h-3 w-3" />
@@ -274,7 +292,7 @@ export default function Dashboard() {
                           <Button variant="ghost" size="icon">
                             <ChevronRight className="h-4 w-4" />
                           </Button>
-                        </div>
+                        </div> */}
                       </div>
                     ))}
                   </div>
@@ -311,14 +329,14 @@ export default function Dashboard() {
                             </div>
                             <span className="font-medium text-foreground">{b.fullName}</span>
                           </div>
-                          <div className="flex flex-wrap items-center gap-2">
+                          {/* <div className="flex flex-wrap items-center gap-2">
                             <Badge
                               variant={b.status === "approved" ? "default" : "secondary"}
                               className={b.status === "approved" ? "bg-primary/10 text-primary hover:bg-primary/20" : ""}
                             >
                               {b.status === "approved" ? "Added" : "Pending"}
                             </Badge>
-                          </div>
+                          </div> */}
                         </div>
                       ))}
                     </div>

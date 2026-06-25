@@ -13,6 +13,7 @@ export function isValidBirthdayDate(day: number, month: number) {
 
 export const createBirthdaySchema = z.object({
   fullName: z.string().trim().min(1).max(120),
+  phone: z.string().trim().max(30).nullable().optional(),
   day: z.coerce.number().int().min(1).max(31),
   month: z.coerce.number().int().min(1).max(12),
   year: z.coerce.number().int().min(1900).max(new Date().getFullYear()).nullable().optional(),

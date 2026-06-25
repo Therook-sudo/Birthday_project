@@ -17,6 +17,7 @@ import NotFound from "./pages/NotFound";
 import ForgotPassword from "./pages/ForgotPassword";
 import PublicCollectBirthday from "./pages/PublicCollectBirthday";
 import SecuritySettings from "./pages/SecuritySettings";
+import TermsAndPrivacy from "./pages/TermsAndPrivacy";
 
 
 const queryClient = new QueryClient({
@@ -41,8 +42,14 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
-            <Route path="/onboarding" element={<Onboarding />} />
-            {/* Public wishlist view by user id */}
+            <Route
+              path="/onboarding"
+              element={
+                <ProtectedRoute>
+                  <Onboarding />
+                </ProtectedRoute>
+              }
+            />            {/* Public wishlist view by user id */}
             <Route path="/wishlist/:userId" element={<Wishlist />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
 
@@ -93,6 +100,11 @@ const App = () => (
                   <SecuritySettings />
                 </ProtectedRoute>
               }
+            />
+
+            <Route
+              path="/terms-and-privacy"
+              element={<TermsAndPrivacy />}
             />
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

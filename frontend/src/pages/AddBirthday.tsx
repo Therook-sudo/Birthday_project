@@ -13,13 +13,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { 
-  Gift, 
-  Calendar, 
-  User, 
-  Instagram, 
-  Linkedin, 
-  Facebook, 
+import {
+  Gift,
+  Calendar,
+  User,
+  Instagram,
+  Linkedin,
+  Facebook,
   Twitter,
   Check,
   EyeOff
@@ -44,15 +44,16 @@ export default function AddBirthday() {
   const [hideYear, setHideYear] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
-  fullName: "",
-  day: "",
-  month: "",
-  year: "",
-  linkedin: "",
-  instagram: "",
-  facebook: "",
-  twitter: "",
-});
+    fullName: "",
+    phone: "",
+    day: "",
+    month: "",
+    year: "",
+    linkedin: "",
+    instagram: "",
+    facebook: "",
+    twitter: "",
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,6 +65,7 @@ export default function AddBirthday() {
     try {
       await createBirthday.mutateAsync({
         fullName: formData.fullName.trim(),
+        phone: formData.phone || null,
         day: parseInt(formData.day, 10),
         month: parseInt(formData.month, 10),
         year: !hideYear && formData.year ? parseInt(formData.year, 10) : null,
@@ -128,6 +130,23 @@ export default function AddBirthday() {
                 onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                 className="h-12"
                 required
+              />
+            </div>
+
+            <div className="mb-6">
+              <Label htmlFor="phone">
+                Phone Number
+              </Label>
+
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="e.g. 078 123 4567"
+                value={formData.phone}
+                onChange={(e) =>
+                  setFormData({ ...formData, phone: e.target.value })
+                }
+                className="h-12"
               />
             </div>
 
